@@ -119,6 +119,7 @@ INSTRUCTIONS : PRINT '(' EQUATION ')' {
                 }
             | WHILE '(' VARIABLE ',' ASSIGNMENT ')' INSTRUCTIONS {
                     $$ = $7;
+                    if(*$3 != (*$5)[0].var) { return yyerror("wrong second argument in WHILE"); }
                     $$->insert($$->begin(), $5->begin(), $5->end()); delete $5;
                     Instruction temp;
                     temp.type = WHILE_;
@@ -127,6 +128,7 @@ INSTRUCTIONS : PRINT '(' EQUATION ')' {
                 }
             | WHILE '(' VARIABLE ',' ASSIGNMENT ')' '{' INSTRUCTIONS_MULTI '}' {
                     $$ = $8;
+                    if(*$3 != (*$5)[0].var) { return yyerror("wrong second argument in WHILE"); }
                     $$->insert($$->begin(), $5->begin(), $5->end()); delete $5;
                     Instruction temp;
                     temp.type = WHILE_;
@@ -205,6 +207,7 @@ int check_variable_declaration(const std::string& var) {
 
 bool compare (const double& left, const std::string& comparator, const double& right){
     if(comparator == "==") { return left == right; }
+    else if(comparator == "!=") { return left != right; }
     else if(comparator == ">")  { return left >  right; }
     else if(comparator == ">=") { return left >= right; }
     else if(comparator == "<")  { return left <  right; }
