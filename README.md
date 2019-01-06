@@ -53,8 +53,7 @@ check = 1;
 WHILE (it , it=it+1) { 
 	IF(check < 128) {
 		check = check * 2;
-		//it2 = 2;
-		//WHILE (it2, it2 = it2 - 1) PRINT(check);
+		WHILE (it2, it2 = it2 - 1) PRINT(check);
 	};
 };
 ```
