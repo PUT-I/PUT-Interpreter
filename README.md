@@ -24,7 +24,19 @@ Interpreter written in Bison, Flex and C++ for simple custom programming languag
   - first argument - control variable for loop. Breaks the loop upon reaching the value of zero.
   - second argument - assingment executed on first argument.
 
-### Capabilities
+## Mode Flags
+This program uses flags to run in normal mode or debug mode.
+Possible run scenarios:<br/>
+`INTERPRETER -n`<br/>
+`INTERPRETER -d`<br/>
+`INTERPRETER -flag < program.txt`
+
+`-n` - runs program in normal mode.<br/>
+`-d` - runs program in debug mode.<br/>
+`-flag` - any of above flags (used only for example).
+
+## Capabilities
+  - debug mode (enabled with flag),
   - real numbers operations,
   - order of operations (eg. multiplication before addition),
   - negative numbers and negated variables,
@@ -36,7 +48,7 @@ Interpreter written in Bison, Flex and C++ for simple custom programming languag
 ## Example Code
 ```
 var_1 = 3^5;
-var_2 = -var_1 + 3 + 120 + 5/3*3;
+var_2 = -var_1 + 3 + 120 + 4*5/3;
 
 //This is a commnet (interpreter ignores it)
 /*
@@ -57,6 +69,9 @@ WHILE (it , it=it+1) {
 		WHILE (it2, it2 = it2 - 1) PRINT(check);
 	};
 };
+
+print(0);
+print(check);
 ```
 *code written in language defined for the interpreter
 
