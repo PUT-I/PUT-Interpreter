@@ -1,3 +1,5 @@
+%option noyywrap
+
 %{
 #include "structs_interpreter.hpp"
 #include <string>
@@ -63,8 +65,6 @@ int yyerror(const char* str) {
 	std::cerr << str << "!\n";
 	return 1;
 }
-
-int yywrap() { delete yylval.strName; return 1; }
 
 void assign_yylval_str(char*& text) {
 	yylval.strName = new std::string(yytext);
