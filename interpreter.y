@@ -1,7 +1,6 @@
 %{
     #include "structs_interpreter.hpp"
     #include <stack>
-    #include <algorithm>
 	#include <iostream>
     #include <iomanip>
     #include <map>
@@ -22,6 +21,7 @@
     static int dummy = 0;
     unsigned int line = 1;
     unsigned int column = 1;
+    bool debug;
  
     //---- Functions
     inline int check_variable_declaration(const std::string& variableName);
@@ -278,7 +278,7 @@ double calculate_equation(const std::vector<Element>& elements) {
 
     //Assigment of first argument to result (late operations are executed on it)
     if(elements[0].var.empty()) { result = elements[0].val; }
-    else { val = get_variable_value(elements[0].var); }
+    else { result = get_variable_value(elements[0].var); }
 
     //Execution loop
     for(int i = 0; i < elements.size() - 1; i++) {
@@ -301,7 +301,6 @@ double calculate_equation(const std::vector<Element>& elements) {
         else {
             tempResult = val;
             instructionStack.push(elements[i]);
-            continue;
         } //End priority check
 
         //Stack check
@@ -338,12 +337,12 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
     switch(instructions[i].type) {
         case ASSIGNMENT_ : {
             variables[instructions[i].var] = calculate_equation(instructions[i].elements[0]);
-            std::cout << "Variable " << instructions[i].var << " has value of " << variables[instructions[i].var] << "\n";
+            if(debug) { std::cout << "Variable " << instructions[i].var << " has value of " << variables[instructions[i].var] << "\n"; }
             break;
         } //end ASSIGN
 
         case PRINT_ : {
-            std::cout << "PRINT: " << calculate_equation(instructions[i].elements[0]) << "\n";
+            std::cout << ( debug? "PRINT: " : "")  << calculate_equation(instructions[i].elements[0]) << "\n";
             break;
         } //end PRINT
 
@@ -351,20 +350,20 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
             const double left = calculate_equation(instructions[i].elements[0]);
             const double right = calculate_equation(instructions[i].elements[1]);
             
-            std::cout << left << " " + instructions[i].comparator + " " << right << ": ";
+            if(debug) { std::cout << left << " " + instructions[i].comparator + " " << right << ": "; }
             i_ref += 1 + instructions[i].instructions_inside;
             if(compare(left, instructions[i].comparator, right)) {
-                std::cout << "TRUE\n";
+                if(debug) { std::cout << "TRUE\n"; }
                 for(int j = i + 1; j < i + 1 + instructions[i].instructions_inside; j++) {
                     execute_instruction(instructions, j, j);
                 }
             }
-            else { std::cout << "FALSE\n"; }
+            else { if(debug) { std::cout << "FALSE\n"; } }
             break;
         } //end IF
 
         case WHILE_ : {
-            std::cout << "\nLoop start\n";
+            if(debug) { std::cout << "\nLoop start\n"; }
             const std::string var = instructions[i].var;
             i_ref += 2 + instructions[i].instructions_inside;
             while(variables[var] != 0) {
@@ -372,9 +371,9 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
                     execute_instruction(instructions, j, j);
                 }
                 variables[var] = calculate_equation(instructions[i + 1].elements[0]);
-                std::cout << "Variable " << var << " has value of " << variables[var] << "\n";
+                if(debug) { std::cout << "Variable " << var << " has value of " << variables[var] << "\n"; }
             }
-            std::cout << "Loop end\n";
+            if(debug) { std::cout << "Loop end\n"; }
             break;
         } //end WHILE
 

@@ -12,6 +12,7 @@ int yyparse();
 //---- Global variables
 extern unsigned int line;
 extern unsigned int column;
+extern bool debug;
 
 //---- Functions
 inline void assign_yylval_str(char* text);
@@ -62,7 +63,24 @@ inline void assign_yylval_str(char* text);
 . { return UNK; }
 %%
 
-int main(void ){ yyparse(); return 1; }
+int display_instruction(){
+	std::cout << "\nRuns interpreter for simple custom programming language.\n\n";
+	std::cout << "INTERPRETER -n\n";	
+	std::cout << "INTERPRETER -d\n\n";	
+	std::cout << "-n	Runs application in normal mode.\n";	
+	std::cout << "-d	Runs application in debug mode.\n";	
+	return 1;
+}
+
+int main(int argc, char* argv[]){
+	if (argc == 2) { 
+		if(std::string(argv[1]) == "-n") { debug = false; }
+		else if (std::string(argv[1]) == "-d") { debug = true; }
+		else { return display_instruction(); }
+	}
+	else  { return display_instruction(); }
+	return yyparse();
+}
 
 int yyerror(const char* str) {
 	std::cerr << line << ':' << column << ": error: ";
