@@ -2,14 +2,13 @@
     #include "structs_interpreter.hpp"
     #include <stack>
     #include <algorithm>
-	#include <iostream>
+    #include <iostream>
     #include <iomanip>
     #include <map>
     #include <math.h>
 
     //---- Deklaracje funkcji do wykorzystania w pliku lex
 	int yylex();
-    int yywrap();
 	int yyerror(const char*);
 
     //---- Stałe globalne
