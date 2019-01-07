@@ -2,29 +2,29 @@
     #include "structs_interpreter.hpp"
     #include <stack>
     #include <algorithm>
-    #include <iostream>
+	#include <iostream>
     #include <iomanip>
     #include <map>
     #include <math.h>
 
-    //---- Deklaracje funkcji do wykorzystania w pliku lex
+    //---- Function declarations to use in lex file
 	int yylex();
 	int yyerror(const char*);
 
-    //---- Stałe globalne
+    //---- Global constants
     static const std::map<std::string, int8_t> priorities = {
         { ""  , 0 }, { "+" , 0 }, { "-" , 0 },
         { "*" , 1 }, { "/" , 2 }, { "^" , 3 }
-    }; //Wykorzystywane w kolejności wykonywania działan
+    }; //Used in order of operations
 
-    //---- Zmienne globalne
+    //---- Global variables
     std::map<std::string, double> variables;
     static int dummy = 0;
     unsigned int line = 1;
     unsigned int column = 1;
  
-    //---- Funkcje
-    inline int check_variable_declaration(const std::string& var);
+    //---- Functions
+    inline int check_variable_declaration(const std::string& variableName);
     inline double calculate_equation(const std::vector<Element>& elements);
     inline void execute_instruction(std::vector<Instruction>& instructions, const int i, int& i_ref);
 %}
@@ -36,7 +36,7 @@
     std::vector<Element>* Elements;
 };
 
-/*---- Nieterminale ----*/
+/*---- Nonterminals ----*/
 %start PROGRAM
 %type<Elements> EQUATION
 %type<Instructions> ASSIGNMENT
@@ -45,13 +45,12 @@
 %type<strName> VARIABLE
 %type<strName> OPERATOR
 
-/*---- Tokeny Z Typem ----*/
+/*---- Tokens with type ----*/
 %token <fVal> NUMBER
 %token <strName> VARNAME
-//%token <strName> OPERATOR
 %token <strName> COMPARATOR
 
-/*---- Tokeny Bez Typu ----*/
+/*---- Tokens without type ----*/
 %token UNK
 %token PRINT
 %token IF
@@ -60,10 +59,10 @@
 
 %%
 
-/*---- Reguły - S ----*/
+/*---- Rules - S ----*/
 PROGRAM : PROGRAM INSTRUCTIONS ';' {
                 std::cout << std::setprecision(15);
-                if(!$2->empty()){ execute_instruction(*$2, 0, dummy); }
+                if(!$2->empty()) { execute_instruction(*$2, 0, dummy); }
                 delete $2;
             }
         | PROGRAM INSTRUCTIONS { return yyerror("expected ';' at the end of instruction"); }
@@ -72,7 +71,7 @@ PROGRAM : PROGRAM INSTRUCTIONS ';' {
         | /*nic*/
         ;
 
-/*---- Reguły - OPERATOR ----*/
+/*---- Rules - OPERATOR ----*/
 OPERATOR : '+' { $$ = new std::string("+"); }
          | '-' { $$ = new std::string("-"); }
          | '*' { $$ = new std::string("*"); }
@@ -80,17 +79,16 @@ OPERATOR : '+' { $$ = new std::string("+"); }
          | '^' { $$ = new std::string("^"); }
          ;
 
-/*---- Reguły - INSTRUCTIONS_MULTI ----*/
-INSTRUCTIONS_MULTI : INSTRUCTIONS_MULTI INSTRUCTIONS ';' {
-                        $$->insert($$->end(), $2->begin(), $2->end());
-                    }
+/*---- Rules - INSTRUCTIONS_MULTI ----*/
+INSTRUCTIONS_MULTI : INSTRUCTIONS_MULTI INSTRUCTIONS ';' { $$->insert($$->end(), $2->begin(), $2->end()); }
+                   | INSTRUCTIONS_MULTI INSTRUCTIONS { line--; column--; return yyerror("expected ';' at the end of instruction"); }
                    | INSTRUCTIONS_MULTI NEWLINE { column = 1; }
                    | /*nic*/{
                        $$ = new std::vector<Instruction>();
                     }
                    ;
 
-/*---- Reguły - INSTRUCTIONS ----*/
+/*---- Rules - INSTRUCTIONS ----*/
 INSTRUCTIONS : PRINT '(' EQUATION ')' {
                     $$ = new std::vector<Instruction>(1);
                     (*$$)[0].elements.push_back(*$3); delete $3;
@@ -137,7 +135,7 @@ INSTRUCTIONS : PRINT '(' EQUATION ')' {
                 }
             ;
 
-/*---- Reguły - ASSIGNMENT ----*/
+/*---- Rules - ASSIGNMENT ----*/
 ASSIGNMENT : VARNAME '=' EQUATION {
                 variables[*$1];
                 $$ = new std::vector<Instruction>(1);
@@ -147,7 +145,7 @@ ASSIGNMENT : VARNAME '=' EQUATION {
 		    }
            ;
 
-/*---- Reguły - EQUATION ----*/
+/*---- Rules - EQUATION ----*/
 EQUATION : NUMBER {
         $$ = new std::vector<Element>(1);
         ($$->end()-1)->val = $1;
@@ -186,7 +184,7 @@ EQUATION : NUMBER {
     }
   ;
 
-/*---- Reguły - VARIABLE ----*/
+/*---- Rules - VARIABLE ----*/
 VARIABLE : VARNAME { 
                 if(check_variable_declaration(*$1) == 1) { return 1; }
                 $$ = $1;
@@ -194,17 +192,31 @@ VARIABLE : VARNAME {
          ;
 %%
 
-int check_variable_declaration(const std::string& var) {
-        if(variables.find(var) == variables.end()) {
-        const std::string message("variable undeclared " + std::string(var));
-        return yyerror( message.c_str() );
+/*
+ * Checks if variable is declared.
+ *
+ * @pa variableName Name of variable to check.
+ * @return Comparison result.
+*/
+int check_variable_declaration(const std::string& variableName) {
+        if(variables.find(variableName) == variables.end()) {
+        const std::string message("variable undeclared " + variableName);
+        return yyerror(message.c_str());
     }
     return 0;
 }
 
-//---- Wykonywanie Instrukcji
+//---- Instruction execution functions
 
-bool compare (const double& left, const std::string& comparator, const double& right){
+/*
+ * Executes comparison between left and right operands.
+ *
+ * @param left Left operand.
+ * @param operation comparator.
+ * @param Right operand.
+ * @return Comparison result.
+*/
+bool compare (const double& left, const std::string& comparator, const double& right) {
     if(comparator == "==") { return left == right; }
     else if(comparator == "!=") { return left != right; }
     else if(comparator == ">")  { return left >  right; }
@@ -214,82 +226,93 @@ bool compare (const double& left, const std::string& comparator, const double& r
     return false;
 }
 
-void calculate_equation_operation(double& leftValue, const std::string& operation, const double& rightValue) {
-    //---- Dodawanie
-    if(operation == "+") { leftValue += rightValue; }
+/*
+ * Executes elemental calculation operation.
+ *
+ * @param left Left operand.
+ * @param operation Operator.
+ * @param Right operand.
+ * @return void.
+*/
+void calculate_equation_operation(double& left, const std::string& operation, const double& right) {
+    //---- Addition
+    if(operation == "+") { left += right; }
 
-    //---- Odejmowanie
-    else if(operation == "-") { leftValue -= rightValue; }
+    //---- Subtraction
+    else if(operation == "-") { left -= right; }
 
-    //---- Mnozenie
-    else if(operation == "*") { leftValue *= rightValue; }
+    //---- Multiplication
+    else if(operation == "*") { left *= right; }
 
-    //---- Dzielenie
-    else if(operation == "/") { leftValue /= rightValue; }
+    //---- Division
+    else if(operation == "/") { left /= right; }
 
-    //---- Potegowanie
-    else if(operation == "^") { leftValue = pow(leftValue,rightValue); }
+    //---- Power
+    else if(operation == "^") { left = pow(left, right); }
 }
 
-double calculate_equation(const std::vector<Element>& elements){
-    double result = 0;     //Zmienna przechowująca wynik obliczen
-    double tempResult = 0; //Zmienna przechowująca wynik tymczasowych obliczen (np. gdy po dodawaniu sa mnozenia)
-    double val = 0; //Zmienna przechoująca wartość prawego argumentu
+double get_variable_value(const std::string& variableName){
+    double result;
+    std::string temp_var = variableName;
+    const char var_sign = *(temp_var.end()-1);
+    temp_var.pop_back();
+    result = variables[temp_var];
+    if(var_sign == '-') { result = -result; }
+    return result;
+}
 
-    //Stos części do wykonania później (wykorzystany przy kolejności wykonywania działa)
+/*
+ * Calculates given equation.
+ *
+ * @param elements Set elements to execute calculation on.
+ * @return Result of calculation.
+*/
+double calculate_equation(const std::vector<Element>& elements) {
+    double result = 0;
+    double tempResult = 0; //Stores temporal result (eg. when multiplication occures after addition)
+    double val = 0; //Stores right argument value
+
+    //Stack of instructions to do late
+    //Used int order of operations
     std::stack<Element> instructionStack;
 
-    //Przypisanie pierwszego argumentu do wyniku (później wykonywane są na nim operacje)
-    if( elements[0].var.empty() ) { result = elements[0].val; }
-    else { 
-        std::string temp_var = elements[0].var;
-        const char var_sign = *(temp_var.end()-1);
-        temp_var.pop_back();
-        result = variables[temp_var];
-        if(var_sign == '-') { result = -result; }
-    }
+    //Assigment of first argument to result (late operations are executed on it)
+    if(elements[0].var.empty()) { result = elements[0].val; }
+    else { val = get_variable_value(elements[0].var); }
 
-    //Pętla wykonywania
-    for( int i = 0; i < elements.size() - 1; i++ ) {
-        if( elements[i+1].var.empty() ){ val = elements[i+1].val; }
-        //Jeśli argument jest zmienną to ściągamy jej wartość z mapy
+    //Execution loop
+    for(int i = 0; i < elements.size() - 1; i++) {
+        if(elements[i+1].var.empty()) { val = elements[i+1].val; }
+
+        //When argument is variable its value is read from variables map
+        else { val = get_variable_value(elements[i+1].var); }
+
+        //Operators priority check
+        //When first operator is more or equally important as the second operator
+        //Operation is executed
+        if(priorities.at(elements[i].operation) >= priorities.at(elements[i+1].operation)) {
+            //Stack empty - operations executed on result
+            if(instructionStack.empty()) { calculate_equation_operation(result, elements[i].operation, val); }
+            //Stack not empty - operations executed on temporal result
+            else { calculate_equation_operation(tempResult, elements[i].operation, val); }
+        }
+        //When first operator is less important than second
+        //Operation pushed on the stack
         else {
-            std::string temp_var = elements[i+1].var;
-            const char var_sign = *(temp_var.end()-1);
-            temp_var.pop_back();
-            val = variables[temp_var];
-            if(var_sign == '-') { val = -val; }
-        }
-
-        //Sprawdzanie priorytetów operatorów
-        if( priorities.at(elements[i].operation) >= priorities.at(elements[i+1].operation) ) {
-            if( instructionStack.empty() ) { //Dla pustego stosu wykoknujemy operację na wyniku
-                calculate_equation_operation(result, elements[i].operation, val);
-            }
-            else { //Dla niepustego stosu wykonujemy operację na tymaczasowych wyniku
-                calculate_equation_operation(tempResult, elements[i].operation, val);
-            }
-        }
-        else { //Jeśli drugi operator jest wyższego priorytetu niż pierwszy
             tempResult = val;
             instructionStack.push(elements[i]);
-        } //Koniec sprawdzania priorytetów
+            continue;
+        } //End priority check
 
-        //Sprawdzanie stosu
-        while(!instructionStack.empty()){
-            //Jeśli operator na stosie ma priorytet niemniejszy od operatora aktualnego to wykonujemy operację
-            if( priorities.at(instructionStack.top().operation) >= priorities.at(elements[i + 1].operation) ) {
-                if( instructionStack.size() > 1 ) { 
-                    //Jeśli po operacji stos nie będzie pusty to wykonujemy ją
-                    //pomiędzy wynikiem tymczasowym a argumentem na stosie
-                    if( instructionStack.top().var.empty() ) { val = instructionStack.top().val; }
-                    else { 
-                        std::string temp_var = instructionStack.top().var;
-                        const char var_sign = *(temp_var.end()-1);
-                        temp_var.pop_back();
-                        val = variables[temp_var];
-                        if(var_sign == '-') { val = -val; }
-                    }
+        //Stack check
+        while(!instructionStack.empty()) {
+            //When first operator is more or equally important as the second operator
+            if(priorities.at(instructionStack.top().operation) >= priorities.at(elements[i + 1].operation)) {
+                if(instructionStack.size() > 1) { 
+                    //If stack won't be empty after operation execution
+                    //operation is executed on temporal result and argument on stack
+                    if(instructionStack.top().var.empty()) { val = instructionStack.top().val; }
+                    else { val = get_variable_value(instructionStack.top().var); }
                     calculate_equation_operation(tempResult, instructionStack.top().operation, val);
                 }
                 else { calculate_equation_operation(result, instructionStack.top().operation, tempResult); }
@@ -298,17 +321,24 @@ double calculate_equation(const std::vector<Element>& elements){
                 if(instructionStack.empty()) { tempResult = 0; }
             }
             else { break; }
-        } //Koniec sprawdzania stosu
-    } //Koniec pętli wykonywania
+        } //End stack check
+    } //End execution loop
     return result;
 }
 
+/*
+ * Selects action for instruction type and executes it.
+ *
+ * @param instructions Set of instructions to execute.
+ * @param i Current position in set.
+ * @param i_ref Changeable position. Used in recurrence to prevent multiple instruction executions. 
+ * @return void.
+*/
 void execute_instruction(std::vector<Instruction>& instructions, const int i, int& i_ref) {
-    switch( instructions[i].type ){
+    switch(instructions[i].type) {
         case ASSIGNMENT_ : {
             variables[instructions[i].var] = calculate_equation(instructions[i].elements[0]);
-            std::cout << "Zmienna " << instructions[i].var << " ma wartosc " 
-                      << variables[instructions[i].var] << "\n";
+            std::cout << "Variable " << instructions[i].var << " has value of " << variables[instructions[i].var] << "\n";
             break;
         } //end ASSIGN
 
@@ -318,35 +348,33 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
         } //end PRINT
 
         case IF_ : {
-            double left = calculate_equation(instructions[i].elements[0]);
-            double right = calculate_equation(instructions[i].elements[1]);
+            const double left = calculate_equation(instructions[i].elements[0]);
+            const double right = calculate_equation(instructions[i].elements[1]);
             
             std::cout << left << " " + instructions[i].comparator + " " << right << ": ";
-            i_ref += 1 + + instructions[i].instructions_inside;
-            if(compare(left, instructions[i].comparator, right)){
-                std::cout << "prawda\n";
+            i_ref += 1 + instructions[i].instructions_inside;
+            if(compare(left, instructions[i].comparator, right)) {
+                std::cout << "TRUE\n";
                 for(int j = i + 1; j < i + 1 + instructions[i].instructions_inside; j++) {
                     execute_instruction(instructions, j, j);
                 }
             }
-            else { std::cout << "falsz\n"; }
+            else { std::cout << "FALSE\n"; }
             break;
         } //end IF
 
         case WHILE_ : {
-            std::cout << "\nPoczatek petli\n";
-            //Spisanie nazwy zmiennej iteracyjnej
+            std::cout << "\nLoop start\n";
             const std::string var = instructions[i].var;
             i_ref += 2 + instructions[i].instructions_inside;
-            while(variables[var] != 0){
+            while(variables[var] != 0) {
                 for(int j = i + 2; j < i + 2 + instructions[i].instructions_inside; j++) {
                     execute_instruction(instructions, j, j);
                 }
-                //Wykonanie instrukcji iteracyjnej pętli                
                 variables[var] = calculate_equation(instructions[i + 1].elements[0]);
-                std::cout << "Zmienna " << var << " ma wartosc " << variables[var] << "\n";
+                std::cout << "Variable " << var << " has value of " << variables[var] << "\n";
             }
-            std::cout << "Koniec petli\n";
+            std::cout << "Loop end\n";
             break;
         } //end WHILE
 

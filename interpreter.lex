@@ -1,4 +1,4 @@
-%option noyywrap
+%option noyywrap 
 
 %{
 #include "structs_interpreter.hpp"
@@ -9,12 +9,12 @@
 
 int yyparse();
 
-//---- Zmienne globalne
+//---- Global variables
 extern unsigned int line;
 extern unsigned int column;
 
-//---- Funkcje
-inline void assign_yylval_str(char*& text);
+//---- Functions
+inline void assign_yylval_str(char* text);
 %}
 
 %x COMMENT
@@ -40,7 +40,7 @@ inline void assign_yylval_str(char*& text);
 	return NUMBER;
 }
 
-"=="|">"|">="|"<"|"<=" { //COMPARATOR
+"=="|"!="|">"|">="|"<"|"<=" { //COMPARATOR
 	column += std::string(yytext).length();
 	assign_yylval_str(yytext);
 	return COMPARATOR;
@@ -49,11 +49,15 @@ inline void assign_yylval_str(char*& text);
 
 "//".*$   { /*komentarz jedno-wierszowy*/ }
 
-"/*" { BEGIN(COMMENT); }
-<COMMENT>(.|\n|\r|\r\n)*"*/" { BEGIN(INITIAL); }
+"/*" { column += 2; BEGIN(COMMENT); }
+<COMMENT>(\n|\r|\r\n) { line++; }
+<COMMENT>"*/" { column += 2; BEGIN(INITIAL); }
+<COMMENT>[\t] { column += 5; }
+<COMMENT>. { column++; }
 
 [\n]|[\r]|[\r\n] { line++; return NEWLINE; }
-[ \t] { column++; }
+[ ] { column++; }
+[\t] { column += 5; }
 
 . { return UNK; }
 %%
@@ -66,7 +70,15 @@ int yyerror(const char* str) {
 	return 1;
 }
 
-void assign_yylval_str(char*& text) {
-	yylval.strName = new std::string(yytext);
+//---- Functions
+
+/*
+ * Assigns text content to yylval strName field.
+ *
+ * @param text Text to assign to yylval strName.
+ * @return void.
+*/
+void assign_yylval_str(char* text) {
+	yylval.strName = new std::string(text);
 	column += yylval.strName->length();
 }
