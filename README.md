@@ -22,7 +22,7 @@ Interpreter written in Bison, Flex and C++ for simple custom programming languag
 
 ### WHILE Explanation
   - first argument - control variable for loop. Breaks the loop upon reaching the value of zero.
-  - second argument - assingment executed on first argument.
+  - second argument - assignment executed on first argument.
 
 ## Mode Flags
 This program uses flags to run in normal mode or debug mode.

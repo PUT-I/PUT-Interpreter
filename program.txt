@@ -1,5 +1,5 @@
 var_1 = 3^5;
-var_2 = -var_1 + 3 + 120 + 5/3*3;
+var_2 = -var_1 + 3 + 120 + 4*5/3;
 
 //This is a commnet (interpreter ignores it)
 /*
@@ -20,3 +20,6 @@ WHILE (it , it=it+1) {
 		WHILE (it2, it2 = it2 - 1) PRINT(check);
 	};
 };
+
+print(0);
+print(check);

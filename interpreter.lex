@@ -2,7 +2,6 @@
 
 %{
 #include "structs_interpreter.hpp"
-#include <string>
 #include <iostream>
 
 #include "y.tab.h"
@@ -63,7 +62,7 @@ inline void assign_yylval_str(char* text);
 . { return UNK; }
 %%
 
-int display_instruction(){
+int display_manual(){
 	std::cout << "\nRuns interpreter for simple custom programming language.\n\n";
 	std::cout << "INTERPRETER -n\n";	
 	std::cout << "INTERPRETER -d\n\n";	
@@ -76,9 +75,9 @@ int main(int argc, char* argv[]){
 	if (argc == 2) { 
 		if(std::string(argv[1]) == "-n") { debug = false; }
 		else if (std::string(argv[1]) == "-d") { debug = true; }
-		else { return display_instruction(); }
+		else { return display_manual(); }
 	}
-	else  { return display_instruction(); }
+	else  { return display_manual(); }
 	return yyparse();
 }
 
