@@ -61,6 +61,7 @@ var_2 = -var_1 + 3 + 120 + 4*5/3;
 	This is also ignored
 */
 
+PRINT("If test");
 a = 10.5^3;
 b = 3 * 10^2/2 + 18/2*3 - 1;
 
@@ -73,10 +74,16 @@ IF ( a >= 10 ) {
 it = -10;
 check = 1;
 
+PRINT("MAIN LOOP");
+
 WHILE ( it, it=it+1 ) { 
 	IF( check < 128 ) {
 		check = check * 2;
 		it2 = 2;
+		
+		PRINT("");
+		PRINT("INTERNAL LOOP");
+		
 		WHILE (it2, it2 = it2 - 1){ 
 			PRINT(check);
 			IF( it2 == 1 ){
@@ -89,9 +96,14 @@ WHILE ( it, it=it+1 ) {
 			PRINT(it2);
 		};
 	};
+	IF( check >= 128 ) {
+		PRINT("");
+		PRINT("IF false!");
+	};
 };
 
-print(0);
+PRINT("");
+PRINT("Print check:");
 print(check);
 ```
 *code written in language defined for the interpreter
