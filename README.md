@@ -4,18 +4,23 @@ Interpreter written in Bison, Flex and C++ for simple custom programming languag
 ## Language Syntax
 ### Instructions
   - assignment - `variable_name = equation`
-  - Print - `PRINT(equation)`
-  - IF - `IF(equation comparator equation) instruction`
-  - IF - `IF(equation comparator equation) { instructions }`
-  - WHILE - `WHILE(variable, assignment) instruction`
-  - WHILE - `WHILE(variable, assignment) { instructions }`
+  - Print
+  	- `PRINT(equation)`
+	- `PRINT("text")`
+  - IF
+  	- `IF(equation comparator equation) instruction`
+	- `IF(equation comparator equation) { instructions }`
+  - WHILE
+  	- `WHILE(variable, assignment) instruction`
+  	- `WHILE(variable, assignment) { instructions }`
 
 ### Symbols Explanation
-  - `equation`:
+  - `equation`
     - single number,
     - single variable,
     - `+-*/` - addition, subtraction, multiplication and division of variables/numbers,
     - `^` - variable/number to the power of variable/number.
+  - `text` - character string (ASCII signs from 32 to 126)
   - `comparator` - one of these words: `==`, `!=`, `>` , `>=`, `<`, `<=`.
   - `instruction` - single instruction.
   - `instructions` - multiple instructions.
@@ -27,9 +32,9 @@ Interpreter written in Bison, Flex and C++ for simple custom programming languag
 ## Mode Flags
 This program uses flags to run in normal mode or debug mode.
 Possible run scenarios:<br/>
-`INTERPRETER -n`<br/>
-`INTERPRETER -d`<br/>
-`INTERPRETER -flag < program.txt`
+- `INTERPRETER -n`
+- `INTERPRETER -d`
+- `INTERPRETER -flag < program.txt`
 
 `-n` - runs program in normal mode.<br/>
 `-d` - runs program in debug mode.<br/>
