@@ -81,7 +81,7 @@ public:
 		//Used int order of operations
 		std::stack<Element> instructionStack;
 
-		//Assigment of first argument to result (late operations are executed on it)
+		//Assigment of first argument to result (later operations are executed on it)
 		if (elements[0].var.empty()) { result = elements[0].val; }
 		else { result = get_variable_value(elements[0].var); }
 
