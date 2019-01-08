@@ -21,7 +21,7 @@
 
 %union {
     double fVal;
-    std::string* strName;
+    std::string* str;
     std::vector<Instruction>* Instructions;
     Equation* equation;
 };
@@ -32,20 +32,21 @@
 %type<Instructions> ASSIGNMENT
 %type<Instructions> INSTRUCTIONS
 %type<Instructions> INSTRUCTIONS_MULTI
-%type<strName> VARIABLE
-%type<strName> OPERATOR
+%type<str> VARIABLE
+%type<str> OPERATOR
 
 /*---- Tokens with type ----*/
 %token <fVal> NUMBER
-%token <strName> VARNAME
-%token <strName> COMPARATOR
+%token <str> TEXT
+%token <str> VARNAME
+%token <str> COMPARATOR
 
 /*---- Tokens without type ----*/
-%token UNK
 %token PRINT
 %token IF
 %token WHILE
 %token NEWLINE
+%token UNK
 
 %%
 
@@ -84,6 +85,11 @@ INSTRUCTIONS : PRINT '(' EQUATION ')' {
                     (*$$)[0].equations.push_back(*$3); delete $3;
                     (*$$)[0].type = PRINT_;
                 }
+            | PRINT '(' TEXT ')' {
+                    $$ = new std::vector<Instruction>(1);
+                    (*$$)[0].var = *$3; delete $3;
+                    (*$$)[0].type = PRINT_TEXT;
+             }
 		    | ASSIGNMENT { $$ = $1; }
             | IF '(' EQUATION COMPARATOR EQUATION ')' INSTRUCTIONS {
                     $$ = $7;
@@ -255,6 +261,12 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
             std::cout << ( debug? "PRINT: " : "")  << instructions[i].calculate(0) << "\n";
             break;
         } //end PRINT
+
+
+        case PRINT_TEXT : {
+            std::cout << ( debug? "PRINT: " : "")  << instructions[i].var << "\n";
+            break;
+        } //end PRINT_TEXT
 
 
         case IF_ : {

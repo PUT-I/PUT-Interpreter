@@ -38,6 +38,7 @@ Possible run scenarios:<br/>
 ## Capabilities
   - debug mode (enabled with flag),
   - real numbers operations,
+  - print instruction working for numbers and texts,
   - order of operations (eg. multiplication before addition),
   - negative numbers and negated variables,
   - nested instructions (IFs in WHILEs and conversely),

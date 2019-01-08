@@ -17,12 +17,21 @@ extern bool debug;
 inline void assign_yylval_str(char* text);
 %}
 
-%x COMMENT
+%x COMMENT TEXT_
 
 %%
 "WHILE"|"while" { column += 5; return WHILE; }
 "PRINT"|"print" { column += 5; return PRINT; }
 "IF"|"if" { column += 2; return IF; }
+
+["] { BEGIN(TEXT_); }
+<TEXT_>[ -~]*["] {
+	assign_yylval_str(yytext);
+	yylval.str->pop_back();
+	BEGIN(INITIAL);
+	return TEXT;
+}
+<TEXT_>. { return UNK; }
 
 [a-zA-Z][a-zA-Z0-9_]* { //VARIABLE
 	assign_yylval_str(yytext);
@@ -90,12 +99,12 @@ int yyerror(const char* str) {
 //---- Functions
 
 /*
- * Assigns text content to yylval strName field.
+ * Assigns text content to yylval str field.
  *
- * @param text Text to assign to yylval strName.
+ * @param text Text to assign to yylval str.
  * @return void.
 */
 void assign_yylval_str(char* text) {
-	yylval.strName = new std::string(text);
-	column += yylval.strName->length();
+	yylval.str = new std::string(text);
+	column += yylval.str->length();
 }
