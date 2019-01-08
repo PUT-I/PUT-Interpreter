@@ -9,15 +9,30 @@ var_2 = -var_1 + 3 + 120 + 4*5/3;
 a = 10.5^3;
 b = 3 * 10^2/2 + 18/2*3 - 1;
 
-IF (a >= 10) IF(a < 10000) print( b );
+IF ( a >= 10 ) { 
+	IF( a < 10000 ){
+		print( b );
+	};
+	print( a );
+};
 it = -10;
 check = 1;
 
-WHILE (it , it=it+1) { 
-	IF(check < 128) {
+WHILE ( it, it=it+1 ) { 
+	IF( check < 128 ) {
 		check = check * 2;
 		it2 = 2;
-		WHILE (it2, it2 = it2 - 1) PRINT(check);
+		WHILE (it2, it2 = it2 - 1){ 
+			PRINT(check);
+			IF( it2 == 1 ){
+				check = check + 1;
+				PRINT(it2);
+			};
+		};
+		IF( it2 == 0 ){
+			it2 = it2 + 3*check;
+			PRINT(it2);
+		};
 	};
 };
 

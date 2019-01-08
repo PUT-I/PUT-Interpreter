@@ -110,6 +110,7 @@ INSTRUCTIONS : PRINT '(' EQUATION ')' {
                     $$->insert($$->begin(), $5->begin(), $5->end()); delete $5;
                     Instruction temp;
                     temp.type = WHILE_;
+                    temp.instructions_inside += 1;
                     temp.var = *$3; delete $3;
                     $$->insert($$->begin(), temp);
                 }
@@ -276,15 +277,21 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
         case WHILE_ : {
             if(debug) { std::cout << "\nLoop start\n"; }
             const std::string var = instructions[i].var;
-            i_ref += 2 + instructions[i].instructions_inside;
+            i_ref += instructions[i].instructions_inside;
             while(variables[var] != 0) {
-                for(int j = i + 2; j < i + 2 + instructions[i].instructions_inside; j++) {
+                for(int j = i + 2; j < i + 1 + instructions[i].instructions_inside; j++) {
+                    /*std::cout << "Inside: " << instructions[i].instructions_inside << '\n';
+                    std::cout << "I: " << i << '\n';
+                    std::cout << "J: " << j << '\n';
+                    std::cout << "J limit: " << i + 2 + instructions[i].instructions_inside << '\n';
+                    std::cout << "i_ref: " << i_ref << '\n';*/
                     execute_instruction(instructions, j, j);
                 }
+                //std::cout << "Execution finish\n";
                 variables[var] = instructions[i + 1].calculate(0);
                 if(debug) { std::cout << "Variable " << var << " has value of " << variables[var] << "\n"; }
             }
-            if(debug) { std::cout << "Loop end\n"; }
+            if(debug) { std::cout << "Loop end\n\n"; }
             break;
         } //end WHILE
 
