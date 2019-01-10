@@ -115,7 +115,7 @@ To compile this program you need:
   - Bison binaries (may require additional binaries)
   
 ### Software used for this project
-  - [MinGW - Minimalist GNU for Windows](https://sourceforge.net/projects/mingw/)
+  - [MinGW - Minimalist GNU for Windows](https://sourceforge.net/projects/mingw-w64/)
   - [Flex for Windows](http://gnuwin32.sourceforge.net/packages/flex.htm)
   - [Bison for Windows](http://gnuwin32.sourceforge.net/packages/bison.htm)
   - [Visual Studio Code](https://code.visualstudio.com/) with [Lex Flex Yacc Bison plugin](https://marketplace.visualstudio.com/items?itemName=faustinoaq.lex-flex-yacc-bison)
