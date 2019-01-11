@@ -292,11 +292,6 @@ void execute_instruction(std::vector<Instruction>& instructions, const int i, in
             i_ref += instructions[i].instructions_inside;
             while(variables[var] != 0) {
                 for(int j = i + 2; j < i + 1 + instructions[i].instructions_inside; j++) {
-                    /*std::cout << "Inside: " << instructions[i].instructions_inside << '\n';
-                    std::cout << "I: " << i << '\n';
-                    std::cout << "J: " << j << '\n';
-                    std::cout << "J limit: " << i + 2 + instructions[i].instructions_inside << '\n';
-                    std::cout << "i_ref: " << i_ref << '\n';*/
                     execute_instruction(instructions, j, j);
                 }
                 //std::cout << "Execution finish\n";
