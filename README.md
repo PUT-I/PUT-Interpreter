@@ -1,4 +1,4 @@
-# Interpreter_Bison_Flex_CPP
+# Interpreter
 Interpreter written in Bison, Flex and C++ for simple custom programming language.
 
 ## Language Syntax
